@@ -31,11 +31,11 @@ app.post('/', async (req, res) => {
   const text = req.body.text;
   if (text) {
     // Verifica se a palavra é proibida
-    const result = await checkForProhibitedWords(text);
-    if (result.prohibitedCount > 0) {
+    const result = await verificarPalavrasProibidas(text);
+    if (result.quantidadePalavrasProibidas > 0) {
       res.status(403).json(result);
     } else {
-      res.status(200).json({ message: `Texto recebido via POST: ${text}` });
+      res.status(200).json({ mensagem: `Texto recebido via POST: ${text}` });
     }
   } else {
     res.status(400).send('A chave "text" não foi fornecida na requisição POST.');
@@ -47,11 +47,11 @@ app.get('/', async (req, res) => {
   const text = req.query.text;
   if (text) {
     // Verifica se a palavra é proibida
-    const result = await checkForProhibitedWords(text);
-    if (result.prohibitedCount > 0) {
+    const result = await verificarPalavrasProibidas(text);
+    if (result.quantidadePalavrasProibidas > 0) {
       res.status(403).json(result);
     } else {
-      res.status(200).json({ message: `Texto recebido via GET: ${text}` });
+      res.status(200).json({ mensagem: `Texto recebido via GET: ${text}` });
     }
   } else {
     res.status(400).send('A chave "text" não foi fornecida na requisição GET.');
@@ -59,24 +59,23 @@ app.get('/', async (req, res) => {
 });
 
 // Função para verificar palavras proibidas em um texto
-function checkForProhibitedWords(text) {
-    // Quebra o texto em palavras usando espaço como delimitador
-    const words = text.split(' ');
-  
-    const sqlQuery = 'SELECT palavra FROM badwords WHERE palavra REGEXP ?';
-    return new Promise((resolve, reject) => {
-      connection.query(sqlQuery, [words.join('|')], (err, results) => {
-        if (err) {
-          reject(err);
-        } else {
-          const prohibitedWords = results.map((row) => row.palavra);
-          const prohibitedCount = prohibitedWords.length;
-          resolve({ prohibitedCount, prohibitedWords });
-        }
-      });
+function verificarPalavrasProibidas(text) {
+  // Quebra o texto em palavras usando espaço como delimitador
+  const palavras = text.split(' ');
+
+  const sqlQuery = 'SELECT palavra FROM badwords WHERE palavra REGEXP ?';
+  return new Promise((resolve, reject) => {
+    connection.query(sqlQuery, [palavras.join('|')], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        const palavrasProibidas = results.map((row) => row.palavra);
+        const quantidadePalavrasProibidas = palavrasProibidas.length;
+        resolve({ quantidadePalavrasProibidas, palavrasProibidas });
+      }
     });
-  }
-  
+  });
+}
 
 // Iniciando o servidor
 app.listen(port, () => {
