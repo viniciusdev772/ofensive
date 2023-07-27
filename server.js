@@ -49,7 +49,7 @@ app.get('/api', async (req, res) => {
     // Verifica se a palavra é proibida
     const result = await verificarPalavrasProibidas(text);
     if (result.quantidadePalavrasProibidas > 0) {
-      res.status(403).json(result);
+      res.status(200).json(result);
     } else {
       res.status(200).json({ mensagem: `Texto recebido via GET: ${text}` });
     }
