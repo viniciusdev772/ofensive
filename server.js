@@ -58,7 +58,7 @@ app.get('/api', async (req, res) => {
       res.status(200).json({ mensagem: `Texto recebido via GET: ${text}` });
     }
   } else {
-    res.status(400).send('A chave "text" não foi fornecida na requisição GET.');
+    res.status(400).send('A chave "text" não foi fornecida na requisição GET Largue de ser burro.');
   }
 });
 
