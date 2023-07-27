@@ -27,7 +27,7 @@ connection.connect((err) => {
 app.use(express.json());
 
 // Rota para receber a chave "text" via POST
-app.post('/', async (req, res) => {
+app.post('/api', async (req, res) => {
   const text = req.body.text;
   if (text) {
     // Verifica se a palavra é proibida
@@ -43,7 +43,7 @@ app.post('/', async (req, res) => {
 });
 
 // Rota para receber a chave "text" via GET
-app.get('/', async (req, res) => {
+app.get('/api', async (req, res) => {
   const text = req.query.text;
   if (text) {
     // Verifica se a palavra é proibida
