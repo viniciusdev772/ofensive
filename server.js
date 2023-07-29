@@ -67,7 +67,7 @@ async function verificarPalavrasProibidas(text) {
   const cacheKey = palavras.join('|');
   const cachedResult = cache.get(cacheKey);
   if (cachedResult) {
-    return { ...cachedResult, cached: true };
+    return { ...cachedResult, extra: 'este resultado está armazenado em cache' };
   }
 
   const [results] = await pool.query(sqlQuery, [cacheKey]);
@@ -77,7 +77,7 @@ async function verificarPalavrasProibidas(text) {
   // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos)
   cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas, cached: false }, 3600);
 
-  return { quantidadePalavrasProibidas, palavrasProibidas, cached: false };
+  return { quantidadePalavrasProibidas, palavrasProibidas, extra: "este resultado não está armazenado em cache" };
 }
 
 // Iniciando o servidor
