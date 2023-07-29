@@ -57,11 +57,22 @@ app.get('/api', async (req, res) => {
 });
 
 // Função para verificar palavras proibidas em um texto
+// Função para verificar palavras proibidas em um texto
 async function verificarPalavrasProibidas(text) {
   // Quebra o texto em palavras usando espaço como delimitador
   const palavras = text.split(' ');
 
-  const sqlQuery = 'SELECT palavra FROM badwords WHERE palavra REGEXP ?';
+  // Criar um array de expressões regulares para cada palavra proibida
+  const regexArray = [];
+  for (const palavra of palavras) {
+    const regex = palavra
+      .split('')
+      .map((char) => (/[aeiou]/i.test(char) ? '.' : char))
+      .join('');
+    regexArray.push(regex);
+  }
+
+  const sqlQuery = `SELECT palavra FROM badwords WHERE ${regexArray.map(() => 'palavra REGEXP ?').join(' OR ')}`;
 
   // Procurar por palavras proibidas no cache em memória primeiro
   const cacheKey = palavras.join('|');
@@ -70,19 +81,16 @@ async function verificarPalavrasProibidas(text) {
     return { ...cachedResult, cached: true };
   }
 
-  const [results] = await pool.query(sqlQuery, [cacheKey]);
+  const [results] = await pool.query(sqlQuery, regexArray);
   const palavrasProibidas = results.map((row) => row.palavra);
   const quantidadePalavrasProibidas = palavrasProibidas.length;
 
-  // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos)
-  cache.set(cacheKey, { 
-    quantidadePalavrasProibidas, 
-    palavrasProibidas: palavrasProibidas.join(', '), 
-    cached: false 
-  }, 3600);
+  // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos) em memória
+  cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas: palavrasProibidas.join(', '), cached: false }, 3600);
 
   return { quantidadePalavrasProibidas, palavrasProibidas: palavrasProibidas.join(', '), cached: false };
 }
+
 
 // Iniciando o servidor
 app.listen(port, () => {
