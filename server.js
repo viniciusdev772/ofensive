@@ -31,11 +31,7 @@ app.post('/api', async (req, res) => {
     try {
       // Verifica se a palavra é proibida
       const result = await verificarPalavrasProibidas(text);
-      if (result.quantidadePalavrasProibidas > 0) {
-        res.status(200).json(result);
-      } else {
-        res.status(200).json({ mensagem: `Texto recebido via POST: ${text}` });
-      }
+      res.status(200).json({ ...result, cached: result.cached });
     } catch (err) {
       res.status(500).send('Erro ao processar a requisição.');
     }
@@ -51,11 +47,7 @@ app.get('/api', async (req, res) => {
     try {
       // Verifica se a palavra é proibida
       const result = await verificarPalavrasProibidas(text);
-      if (result.quantidadePalavrasProibidas > 0) {
-        res.status(200).json(result);
-      } else {
-        res.status(200).json({ mensagem: `Texto recebido via GET: ${text}` });
-      }
+      res.status(200).json({ ...result, cached: result.cached });
     } catch (err) {
       res.status(500).send('Erro ao processar a requisição.');
     }
@@ -75,7 +67,7 @@ async function verificarPalavrasProibidas(text) {
   const cacheKey = palavras.join('|');
   const cachedResult = cache.get(cacheKey);
   if (cachedResult) {
-    return cachedResult;
+    return { ...cachedResult, cached: true };
   }
 
   const [results] = await pool.query(sqlQuery, [cacheKey]);
@@ -83,9 +75,9 @@ async function verificarPalavrasProibidas(text) {
   const quantidadePalavrasProibidas = palavrasProibidas.length;
 
   // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos)
-  cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas }, 3600);
+  cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas, cached: false }, 3600);
 
-  return { quantidadePalavrasProibidas, palavrasProibidas };
+  return { quantidadePalavrasProibidas, palavrasProibidas, cached: false };
 }
 
 // Iniciando o servidor
