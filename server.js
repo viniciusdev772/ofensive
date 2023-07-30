@@ -21,7 +21,7 @@ const pool = mysql.createPool(dbConfig);
 const cache = new NodeCache({ stdTTL: 3600 });
 
 // Middleware to parse JSON in request body
-app.use(express.json());
+//app.use(express.json());
 
 // Rota para receber a chave "text" via POST usando OkHttp
 app.post('/api', async (req, res) => {
@@ -74,7 +74,7 @@ async function verificarPalavrasProibidas(text) {
   const quantidadePalavrasProibidas = palavrasProibidas.length;
 
   // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos) em memória
-  
+
   cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas, cached: false }, 3600);
 
   return { quantidadePalavrasProibidas, palavrasProibidas: palavrasProibidas.join(', '), cached: false };
