@@ -23,7 +23,7 @@ const cache = new NodeCache({ stdTTL: 3600 });
 
 // Rota para receber a chave "text" via POST
 app.post('/api', async (req, res) => {
-  const text = req.text;
+  const text = req.body.text;
   if (text) {
     try {
       // Verifica se a palavra é proibida
@@ -39,7 +39,7 @@ app.post('/api', async (req, res) => {
 
 // Rota para receber a chave "text" via GET
 app.get('/api', async (req, res) => {
-  const text = req.text;
+  const text = req.body.text;
   if (text) {
     try {
       // Verifica se a palavra é proibida
