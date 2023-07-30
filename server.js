@@ -21,7 +21,10 @@ const pool = mysql.createPool(dbConfig);
 // Criação do cache em memória com tempo de vida de 1 hora (3.600.000 milissegundos)
 const cache = new NodeCache({ stdTTL: 3600 });
 
-// Rota para receber a chave "text" via POST
+// Middleware to parse JSON in request body
+app.use(express.json());
+
+// Rota para receber a chave "text" via POST usando OkHttp
 app.post('/api', async (req, res) => {
   const text = req.body.text;
   if (text) {
@@ -39,7 +42,7 @@ app.post('/api', async (req, res) => {
 
 // Rota para receber a chave "text" via GET
 app.get('/api', async (req, res) => {
-  const text = req.body.text;
+  const text = req.query.text;
   if (text) {
     try {
       // Verifica se a palavra é proibida
