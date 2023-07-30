@@ -74,6 +74,7 @@ async function verificarPalavrasProibidas(text) {
   const quantidadePalavrasProibidas = palavrasProibidas.length;
 
   // Armazenar resultado em cache por 1 hora (3.600.000 milissegundos) em memória
+  
   cache.set(cacheKey, { quantidadePalavrasProibidas, palavrasProibidas, cached: false }, 3600);
 
   return { quantidadePalavrasProibidas, palavrasProibidas: palavrasProibidas.join(', '), cached: false };
