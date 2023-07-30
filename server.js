@@ -12,8 +12,7 @@ const dbConfig = {
   database: 'chat',
 };
 
-//definir titulo
-app.set('title', 'OFENSIVES');
+
 
 // Criação do pool de conexões com o banco de dados
 const pool = mysql.createPool(dbConfig);
