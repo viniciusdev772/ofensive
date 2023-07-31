@@ -7,6 +7,7 @@ module.exports = {
       autorestart: true, // Reiniciar automaticamente em caso de falha
       watch: false, // Monitorar alterações nos arquivos (true/false)
       max_memory_restart: '1G', // Limite máximo de memória para reiniciar o processo
+      instances: 'max',
     },
   ],
 };
