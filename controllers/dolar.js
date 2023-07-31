@@ -10,7 +10,7 @@ const headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 };
 
-const cacheFilePath = path.join(__dirname, 'cache.json');
+const cacheFilePath = path.join('./cache.json');
 
 // Function to check if the cached response is still valid
 function isCacheValid(cacheTimestamp) {
