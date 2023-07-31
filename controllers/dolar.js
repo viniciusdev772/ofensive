@@ -1,4 +1,6 @@
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 const defaultApiUrl = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.10813/dados/ultimos/1?formato=json';
 
@@ -8,8 +10,28 @@ const headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 };
 
+const cacheFilePath = path.join('cache.json');
+
+// Function to check if the cached response is still valid
+function isCacheValid(cacheTimestamp) {
+    const now = Date.now();
+    const maxCacheAge = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+    return now - cacheTimestamp < maxCacheAge;
+}
+
 function makeHttpRequest(apiUrl = defaultApiUrl) {
     return new Promise((resolve, reject) => {
+        // Check if the response is already cached and valid
+        if (fs.existsSync(cacheFilePath)) {
+            const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+            const cache = JSON.parse(cacheContent);
+
+            if (cache[apiUrl] && isCacheValid(cache[apiUrl].timestamp)) {
+                resolve(cache[apiUrl].data);
+                return;
+            }
+        }
+
         https.get(apiUrl, { headers }, (response) => {
             let data = '';
 
@@ -21,13 +43,26 @@ function makeHttpRequest(apiUrl = defaultApiUrl) {
                 if (response.statusCode === 200) {
                     const jsonData = JSON.parse(data);
                     const message = data.replace(/\[|\]/g, '');
+
+                    // Update the cache with the new response data and timestamp
+                    const cache = fs.existsSync(cacheFilePath)
+                        ? JSON.parse(fs.readFileSync(cacheFilePath, 'utf8'))
+                        : {};
+
+                    cache[apiUrl] = {
+                        data: jsonData,
+                        timestamp: Date.now(),
+                    };
+
+                    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf8');
+
                     resolve(jsonData);
                 } else {
-                    reject('Erro ao consultar a API.');
+                    reject('Error querying the API.');
                 }
             });
         }).on('error', (error) => {
-            reject('Erro na requisição: ' + error.message);
+            reject('Request error: ' + error.message);
         });
     });
 }
