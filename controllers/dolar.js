@@ -11,16 +11,12 @@ const headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 };
 
-const cacheFilePath = path.join(__dirname, 'cache.json');
+const cacheFilePath = path.join(__dirname, 'resposta.json');
 
 function makeHttpRequest(apiUrl = defaultApiUrl) {
     if (fs.existsSync(cacheFilePath)) {
         const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
-        const cache = JSON.parse(cacheContent);
-
-        if (cache[apiUrl]) {
-            return Promise.resolve(cache[apiUrl]);
-        }
+        return Promise.resolve(JSON.parse(cacheContent));
     }
 
     return new Promise((resolve, reject) => {
@@ -35,12 +31,7 @@ function makeHttpRequest(apiUrl = defaultApiUrl) {
                 if (response.statusCode === 200) {
                     const jsonData = JSON.parse(data);
 
-                    // Save the new data from the API as the cache
-                    const cache = {
-                        [apiUrl]: jsonData,
-                    };
-
-                    fs.writeFileSync(cacheFilePath, JSON.stringify(cache), 'utf8');
+                    fs.writeFileSync(cacheFilePath, JSON.stringify(jsonData), 'utf8');
 
                     resolve(jsonData);
                 } else {
@@ -53,8 +44,15 @@ function makeHttpRequest(apiUrl = defaultApiUrl) {
     });
 }
 
+if (!fs.existsSync(cacheFilePath)) {
+    console.log('Creating cache file...');
+    makeHttpRequest().catch((error) => {
+        console.error('Error making initial request:', error);
+    });
+}
+
 // Schedule the cron job to run once a day at 00:00 (midnight)
-cron.schedule('* * * * *', () => {
+cron.schedule('0 */3 * * *s', () => {
     console.log('Running cron job...');
     makeHttpRequest().catch((error) => {
         console.error('Error in cron job:', error);
