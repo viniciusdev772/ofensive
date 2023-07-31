@@ -1,6 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 
 const defaultApiUrl = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.10813/dados/ultimos/1?formato=json';
 
@@ -10,28 +11,19 @@ const headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 };
 
-const cacheFilePath = path.join('./cache.json');
-
-// Function to check if the cached response is still valid
-function isCacheValid(cacheTimestamp) {
-    const now = Date.now();
-    const maxCacheAge = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-    return now - cacheTimestamp < maxCacheAge;
-}
+const cacheFilePath = path.join(__dirname, 'cache.json');
 
 function makeHttpRequest(apiUrl = defaultApiUrl) {
-    return new Promise((resolve, reject) => {
-        // Check if the response is already cached and valid
-        if (fs.existsSync(cacheFilePath)) {
-            const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
-            const cache = JSON.parse(cacheContent);
+    if (fs.existsSync(cacheFilePath)) {
+        const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+        const cache = JSON.parse(cacheContent);
 
-            if (cache[apiUrl] && isCacheValid(cache[apiUrl].timestamp)) {
-                resolve(cache[apiUrl].data);
-                return;
-            }
+        if (cache[apiUrl]) {
+            return Promise.resolve(cache[apiUrl]);
         }
+    }
 
+    return new Promise((resolve, reject) => {
         https.get(apiUrl, { headers }, (response) => {
             let data = '';
 
@@ -42,19 +34,13 @@ function makeHttpRequest(apiUrl = defaultApiUrl) {
             response.on('end', () => {
                 if (response.statusCode === 200) {
                     const jsonData = JSON.parse(data);
-                    const message = data.replace(/\[|\]/g, '');
 
-                    // Update the cache with the new response data and timestamp
-                    const cache = fs.existsSync(cacheFilePath)
-                        ? JSON.parse(fs.readFileSync(cacheFilePath, 'utf8'))
-                        : {};
-
-                    cache[apiUrl] = {
-                        data: jsonData,
-                        timestamp: Date.now(),
+                    // Save the new data from the API as the cache
+                    const cache = {
+                        [apiUrl]: jsonData,
                     };
 
-                    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf8');
+                    fs.writeFileSync(cacheFilePath, JSON.stringify(cache), 'utf8');
 
                     resolve(jsonData);
                 } else {
@@ -66,5 +52,13 @@ function makeHttpRequest(apiUrl = defaultApiUrl) {
         });
     });
 }
+
+// Schedule the cron job to run once a day at 00:00 (midnight)
+cron.schedule('* * * * *', () => {
+    console.log('Running cron job...');
+    makeHttpRequest().catch((error) => {
+        console.error('Error in cron job:', error);
+    });
+});
 
 module.exports = makeHttpRequest;

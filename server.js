@@ -4,7 +4,7 @@ const NodeCache = require('node-cache');
 const app = express();
 const port = 3005;
 
-const dolarController = require('./controllers/dolar.js');
+const makeHttpRequest = require('./controllers/dolar.js');
 
 const dbConfig = {
     host: 'localhost',
@@ -33,7 +33,7 @@ app.post('/api', async (req, res) => {
 
 app.get('/api/dolar', async (req, res) => {
     try {
-        const result = await dolarController();
+        const result = await makeHttpRequest();
         res.status(200).json(result);
     } catch (err) {
         res.status(500).send('Erro ao processar a requisição.');
