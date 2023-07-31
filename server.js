@@ -4,6 +4,8 @@ const NodeCache = require('node-cache');
 const app = express();
 const port = 3005;
 
+const dolarController = require('./controllers/dolar.js');
+
 const dbConfig = {
     host: 'localhost',
     user: 'chat',
@@ -23,6 +25,16 @@ app.post('/api', async (req, res) => {
     try {
         const result = await verificarPalavrasProibidas(text);
         res.status(200).json({ ...result, cached: result.cached });
+    } catch (err) {
+        res.status(500).send('Erro ao processar a requisição.');
+    }
+});
+
+
+app.get('/api/dolar', async (req, res) => {
+    try {
+        const result = await dolarController();
+        res.status(200).json(result);
     } catch (err) {
         res.status(500).send('Erro ao processar a requisição.');
     }
