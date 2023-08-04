@@ -3,6 +3,10 @@ const mysql = require('mysql2/promise');
 const NodeCache = require('node-cache');
 const app = express();
 const port = 3005;
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json()); // para JSON
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const makeHttpRequest = require('./controllers/dolar.js');
 
