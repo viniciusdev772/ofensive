@@ -23,7 +23,7 @@ const cache = new NodeCache({ stdTTL: 3600 });
 app.post('/api', async (req, res) => {
     const text = req.body.text;
     if (!text) {
-        return res.status(400).send('A chave "text" não foi fornecida na requisição POST.');
+        return res.status(400).send('Endpoint POST espera a chave de formulário "text".');
     }
 
     try {
