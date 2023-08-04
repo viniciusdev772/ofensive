@@ -51,6 +51,10 @@ if (!fs.existsSync(cacheFilePath)) {
     });
 }
 
+makeHttpRequest().catch((error) => {
+    console.error('Error making initial request:', error);
+});
+
 // Schedule the cron job to run once a day at 00:00 (midnight)
 cron.schedule('0 */3 * * *s', () => {
     console.log('Running cron job...');
