@@ -63,9 +63,9 @@ async function verificarPalavrasProibidas(text) {
     const sqlQuery = 'SELECT palavra FROM badwords WHERE palavra REGEXP ?';
     const cacheKey = palavras.join('|');
     const cachedResult = cache.get(cacheKey);
-    if (cachedResult) {
-        return { ...cachedResult, cached: true };
-    }
+    // if (cachedResult) {
+    //     return { ...cachedResult, cached: true };
+    // }
 
     const [results] = await pool.query(sqlQuery, [cacheKey]);
     const palavrasProibidas = results.map((row) => row.palavra);
